@@ -1,0 +1,10 @@
+*.csv
+*.pkl
+*.exe
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+venv/

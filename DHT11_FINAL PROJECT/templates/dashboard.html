@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🌡️ DHT11 Live Dashboard</title>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #000000;
+      color: #FF3B3B;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #220000;
+      color: #FF3B3B;
+      padding: 20px 0;
+      text-align: center;
+      font-size: 28px;
+      box-shadow: 0 0 10px #FF3B3B;
+      text-shadow: 0 0 5px #FF3B3B;
+    }
+
+    .status-box {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background-color: #1a0000;
+      border-left: 5px solid #FF3B3B;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #FF3B3B;
+      font-size: 16px;
+      color: #FF3B3B;
+      z-index: 1000;
+    }
+
+    .status-label {
+      font-weight: bold;
+    }
+
+    .status-value {
+      font-weight: bold;
+      color: #FF3B3B;
+    }
+
+    .status-normal {
+      color: #00FF00;
+      animation: blinkNormal 1s infinite;
+    }
+
+    .status-failure {
+      color: #FF3333;
+      animation: blinkFailure 0.7s infinite;
+    }
+
+    @keyframes blinkNormal {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    @keyframes blinkFailure {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .charts-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 120px;
+      gap: 40px;
+      padding-bottom: 60px;
+    }
+
+    .chart-wrapper {
+      width: 95%;
+      max-width: 1000px;
+      height: 300px;
+    }
+
+    canvas {
+      background-color: #111;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <header>🌡️ DHT11 Live Temperature & Humidity Dashboard</header>
+
+  <div class="status-box" id="statusBox">
+    <div><strong>Temperature:</strong> -- °C</div>
+    <div><strong>Humidity:</strong> -- %</div>
+    <div><strong>Status:</strong> <span id="statusValue">--</span></div>
+    <div><strong>Time:</strong> --:--:--</div>
+    <div><strong>Date:</strong> --/--/----</div>
+  </div>
+
+  <div class="charts-container">
+    <div class="chart-wrapper"><canvas id="tempChart"></canvas></div>
+    <div class="chart-wrapper"><canvas id="humChart"></canvas></div>
+  </div>
+
+  <script>
+    const statusBox = document.getElementById('statusBox');
+    const statusValue = document.getElementById('statusValue');
+    const tempCtx = document.getElementById('tempChart').getContext('2d');
+    const humCtx = document.getElementById('humChart').getContext('2d');
+
+    const tempGradient = tempCtx.createLinearGradient(0, 0, 0, 300);
+    tempGradient.addColorStop(0, 'rgba(255, 99, 132, 0.4)');
+    tempGradient.addColorStop(1, 'rgba(255, 99, 132, 0)');
+
+    const humGradient = humCtx.createLinearGradient(0, 0, 0, 300);
+    humGradient.addColorStop(0, 'rgba(54, 162, 235, 0.4)');
+    humGradient.addColorStop(1, 'rgba(54, 162, 235, 0)');
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 800 },
+      plugins: {
+        zoom: {
+          pan: { enabled: true, mode: 'x' },
+          zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: 'x' }
+        },
+        legend: {
+          labels: { font: { size: 14 } }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Time' } },
+        y: {
+          beginAtZero: false,
+          ticks: { stepSize: 0.1 }
+        }
+      }
+    };
+
+    const tempChart = new Chart(tempCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Temperature (°C)',
+          data: [],
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: tempGradient,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.5,
+          pointRadius: 2
+        }]
+      },
+      options: commonOptions
+    });
+
+    const humChart = new Chart(humCtx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Humidity (%)',
+          data: [],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: humGradient,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.5,
+          pointRadius: 2
+        }]
+      },
+      options: commonOptions
+    });
+
+    async function fetchData() {
+      try {
+        const res = await fetch('/get_status');
+        const data = await res.json();
+
+        const temp = data.temperature;
+        const hum = data.humidity;
+        const status = data.status;
+        const time = data.timestamp || new Date().toLocaleTimeString();
+        const date = new Date().toLocaleDateString();
+
+        // Update status box values
+        statusBox.children[0].innerHTML = `<strong>Temperature:</strong> ${temp} °C`;
+        statusBox.children[1].innerHTML = `<strong>Humidity:</strong> ${hum} %`;
+        statusBox.children[2].innerHTML = `<strong>Status:</strong> <span id="statusValue">${status}</span>`;
+        statusBox.children[3].innerHTML = `<strong>Time:</strong> ${time}`;
+        statusBox.children[4].innerHTML = `<strong>Date:</strong> ${date}`;
+
+        // Update status color
+        const statusSpan = document.getElementById('statusValue');
+        if (status === 'NORMAL') {
+          statusSpan.className = 'status-normal';
+        } else if (status === 'FAILURE') {
+          statusSpan.className = 'status-failure';
+        } else {
+          statusSpan.className = '';
+        }
+
+        // Update chart
+        tempChart.data.labels.push(time);
+        tempChart.data.datasets[0].data.push(temp);
+        if (tempChart.data.labels.length > 100) {
+          tempChart.data.labels.shift();
+          tempChart.data.datasets[0].data.shift();
+        }
+        tempChart.update();
+
+        humChart.data.labels.push(time);
+        humChart.data.datasets[0].data.push(hum);
+        if (humChart.data.labels.length > 100) {
+          humChart.data.labels.shift();
+          humChart.data.datasets[0].data.shift();
+        }
+        humChart.update();
+
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    }
+
+    setInterval(fetchData, 3000);
+  </script>
+</body>
+</html>

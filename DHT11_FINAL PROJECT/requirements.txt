@@ -1,0 +1,13 @@
+flask
+flask_cors
+pyserial
+pandas
+scikit-learn
+joblib
+datetime
+json
+os
+time
+threading
+re
+subprocess
