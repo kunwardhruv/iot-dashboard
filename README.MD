@@ -59,15 +59,18 @@ python server.py
 5️⃣ Access Dashboard
 Open your web browser and go to http://localhost:5000
 
+```
 ---
 
-#📊 Features
 ```
+# 📊 Features
+
 ✔️ Real-time Temperature & Humidity monitoring
 ✔️ Data logging in CSV
 ✔️ ML model to predict system failures
 ✔️ Interactive dark-themed dashboard
 ✔️ Works locally & remotely (via Cloudflare Tunnel)
+
 ```
 
 # 🛠️ Tech Stack
