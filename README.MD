@@ -37,10 +37,9 @@ IOT + DASHBOARD/
 ```
 ---
 
+# ⚙️ Installation
 
-#⚙️ Installation
 ```
-
 1️⃣ Clone the Repository
 git clone https://github.com/kunwardhruv/iot-dashboard.git
 cd iot-dashboard/DHT11_FINAL PROJECT
