@@ -1,5 +1,5 @@
-📌 IoT-based Temperature & Humidity Monitoring with Dashboard
-🚀 Project Overview
+# 📌 IoT-based Temperature & Humidity Monitoring with Dashboard
+## 🚀 Project Overview
 
 This project is an IoT system that collects real-time temperature and humidity data using a DHT11 sensor and Arduino.
 The data is sent to a Flask-based server, stored in CSV format, analyzed with a trained ML model, and visualized on a dark-themed dashboard.
@@ -9,8 +9,9 @@ The system also predicts failure conditions when:
 🌡️ Temperature > 35°C
 
 💧 Humidity > 60%
-
-🗂️ Folder Structure
+---
+# 🗂️ Folder Structure
+```
 IOT + DASHBOARD/
 │
 ├── DHT11_data/                 # Data collection & model training
@@ -33,6 +34,9 @@ IOT + DASHBOARD/
 │
 └── README.md                   # Project documentation
 
+```
+---
+
 ⚙️ Installation
 1️⃣ Clone the Repository
 git clone https://github.com/kunwardhruv/iot-dashboard.git
@@ -53,6 +57,7 @@ python server.py
 5️⃣ Access Dashboard
 Open your web browser and go to http://localhost:5000
 
+---
 
 📊 Features
 
@@ -62,7 +67,7 @@ Open your web browser and go to http://localhost:5000
 ✔️ Interactive dark-themed dashboard
 ✔️ Works locally & remotely (via Cloudflare Tunnel)
 
-🛠️ Tech Stack
+# 🛠️ Tech Stack
 
 Hardware: Arduino + DHT11 Sensor
 
